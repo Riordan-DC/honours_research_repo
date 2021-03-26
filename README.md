@@ -12,16 +12,12 @@ Requires:
 
 The AFLRED dataset provides the instructions being used to test the baseline. This data is not accurate and do not take its performance seriously. This is why the Interactive_Baseline was developed. In the future ALL the ALFRED code will be isolated because it decays my codebase quicker by forcing me to support older versions of AI2THOR.
 
-Ideally, besides all the todos in the notebook, I'd like to extract the components of this notebook into several scripts such as:
-models.py (Baseline, RL, etc)
-utils.py (ALFRED specific dataloader)
-While maintaining the testing and visualisations inside the notebook where iteration is quick and iteraction is required.
-
+Ideally we want to move away from ALFRED and old AI2THOR. Instead, using Vib's new code and NEW graph representation without hundreds of "goto" pose nodes. In future I'd like to eradicate the "go" node entirely (maybe just one attached to each object).
 
 Interactive_Baseline.ipynb
 -------------------------
 The primary baseline with an interactive prompt.
-It is a copy of the Baseline_Instructor notebook but with a prompt loop that allows users to write their instructions. If an instruction fails then 
+It is a copy of the Baseline_Instructor notebook but with a prompt loop that allows users to write their instructions. If an instruction fails then the user is prompted again, until the test passes. 
 
 Instructed_Agent_GridWorld.ipynb
 -------------------------
@@ -48,3 +44,13 @@ Niko's scene graph implimentation.
 thorEnvironment.ipynb
 -------------------------
 Vib's thor environment OpenAI-GYM API for easy use of the thor environment especially in RL experiments. 
+
+utils.py
+--------
+Includes the ALFRED dataloader with instruction tokenisation and punctuation sanitization. All functions for debuging graphs and performing slow neighbourhood averaging functions. This file is included in Baseline_Instructor.ipynb, Interactive_Baseline.ipynb, and any script for running a baseline with ALFRED data.
+
+models.py
+---------
+Includes the Baseline Cosine Model in Pytorch model format. No other models exist however I am investigating:
+- [Thesis addition?] Grove (Graph Vectors) World Vectors. I.e: Custom word vectors learnt on household item properties data. 
+- Graph AutoEncoders for converting a sentence graph where words are connected via adjacency in the sentence to a parse / dependency tree where words are connected via edges signifying dependency.
