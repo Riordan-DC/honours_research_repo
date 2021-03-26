@@ -2,6 +2,7 @@ import tqdm
 import glob
 import json
 import sys
+import string
 import torchtext
 from torchtext.data import get_tokenizer
 
@@ -36,7 +37,7 @@ def load_next_alfred_data(ALFRED_JSON_PATTERN):
                 trajectory = {'task_desc': [], 'instructions': []}
                 trajectory['task_desc'] = d['task_desc']
                 for i in range(len(d['high_descs'])):
-                    instruction = {'instruction': tokenizer(d['high_descs'][i]), 'action': actions[i]['discrete_action']['action'],
+                    instruction = {'instruction': filter(lambda x: not x in string.punctuation, tokenizer(d['high_descs'][i])), 'action': actions[i]['discrete_action']['action'],
                                    'argument_1': actions[i]['discrete_action']['args'][0] if 0 < len(actions[i]['discrete_action']['args']) else '<unk>', 
                                    'argument_2': actions[i]['discrete_action']['args'][1] if 1 < len(actions[i]['discrete_action']['args']) else '<unk>'}
                     trajectory['instructions'].append(instruction)
@@ -86,7 +87,7 @@ def add_object_features(graph):
                 g.x[affordance] /= 2.0
     return g
 
-def thor_restore(init_action, object_poses, object_toggles, dirty_and_empty):
+def thor_restore(controller, init_action, object_poses, object_toggles, dirty_and_empty):
     """
     Restore the Thor simulator to an ALFRED defined state
     """    
@@ -117,9 +118,9 @@ def valid_target(p_env, target):
             in_sim = True
     
     in_graph = False
-    for n in env.graph.nodes:
-        if env.graph.nodes[n]['node_type'] == 'object':
-            if env.graph.nodes[n]['obj'] == target:
+    for n in p_env.graph.nodes:
+        if p_env.graph.nodes[n]['node_type'] == 'object':
+            if p_env.graph.nodes[n]['obj'] == target:
                 in_graph = True
     
     if not in_sim and not in_graph:
@@ -130,7 +131,7 @@ def valid_target(p_env, target):
         return False
     elif in_sim and not in_graph:
         print('[CHECK][NOTE] - Target found in sim but not added to graphmap due to not being found in exploration.')
-        return False #True
+        return True
     elif in_sim and in_graph:
         return True
 
@@ -148,8 +149,10 @@ def valid_action(p_env, action):
 def valid_trajectory(p_env, trajectory):
     """
     Sanity Check. Goes through each instuction and checks that the targets exist
-    and its actions can be performed. WARNING: An object meant to be discovered inside an object
-    will not be detected, TODO: Do Check thor Environment for things contains inside things.
+    and its actions can be performed. 
+    WARNING: An object meant to be discovered inside an object
+    will not be detected, 
+    TODO: Do Check thor Environment for things contains inside things.
     """
     valid = True
     for inst_idx, instruction in enumerate(trajectory['instructions']):
