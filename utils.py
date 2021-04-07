@@ -5,6 +5,11 @@ import sys
 import string
 import torchtext
 from torchtext.data import get_tokenizer
+from nltk.stem import WordNetLemmatizer
+
+if __name__ == "__main__":
+    # We will use lemmatization instead of stemming because stemming is radical and can often destroy the original meaning of a stentence.
+    pass
 
 # Loading and Transforming the ALFRED dataset utilites
 
@@ -20,6 +25,8 @@ def load_next_alfred_data(ALFRED_JSON_PATTERN):
     """ 
     train_json_files = glob.glob(ALFRED_JSON_PATTERN)
     tokenizer = get_tokenizer("basic_english")
+    wnl = WordNetLemmatizer()
+    wnl.lemmatize("knives")
     dataset = []
     
     # Yeild an alfred json
@@ -37,7 +44,11 @@ def load_next_alfred_data(ALFRED_JSON_PATTERN):
                 trajectory = {'task_desc': [], 'instructions': []}
                 trajectory['task_desc'] = d['task_desc']
                 for i in range(len(d['high_descs'])):
-                    instruction = {'instruction': filter(lambda x: not x in string.punctuation, tokenizer(d['high_descs'][i])), 'action': actions[i]['discrete_action']['action'],
+                    sanitized_instruction = tokenizer(d['high_descs'][i])
+                    sanitized_instruction = filter(lambda x: not x in string.punctuation,sanitized_instruction)
+                    sanitized_instruction = [wnl.lemmatize(word) for word in sanitized_instruction]
+                    instruction = {'instruction': sanitized_instruction, 
+                                   'action': actions[i]['discrete_action']['action'],
                                    'argument_1': actions[i]['discrete_action']['args'][0] if 0 < len(actions[i]['discrete_action']['args']) else '<unk>', 
                                    'argument_2': actions[i]['discrete_action']['args'][1] if 1 < len(actions[i]['discrete_action']['args']) else '<unk>'}
                     trajectory['instructions'].append(instruction)
