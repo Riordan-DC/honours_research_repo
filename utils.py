@@ -58,6 +58,17 @@ def load_next_alfred_data(ALFRED_JSON_PATTERN):
             dataset.append((instruction_actions, scene))
     return dataset
 
+def filtered_dataset_copy(alfred_data, scene=None):
+    data_copy = alfred_data.copy()
+    
+    if scene:
+        def filter_scene(x):
+            return x[1]['floor_plan'] == scene
+
+        data_copy = list(filter(filter_scene, data_copy)) 
+    
+    return data_copy
+
 # Test / Training Utility Functions
 
 def draw_graph(graph):
