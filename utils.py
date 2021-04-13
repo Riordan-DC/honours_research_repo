@@ -26,7 +26,6 @@ def load_next_alfred_data(ALFRED_JSON_PATTERN):
     train_json_files = glob.glob(ALFRED_JSON_PATTERN)
     tokenizer = get_tokenizer("basic_english")
     wnl = WordNetLemmatizer()
-    wnl.lemmatize("knives")
     dataset = []
     
     # Yeild an alfred json
