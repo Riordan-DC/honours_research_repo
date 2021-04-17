@@ -28,6 +28,12 @@ def load_next_alfred_data(ALFRED_JSON_PATTERN):
     wnl = WordNetLemmatizer()
     dataset = []
     
+    def preprocess_sentence(sentence):
+        sentence = tokenizer(sentence)
+        sentence = filter(lambda x: not x in string.punctuation, sentence)
+        sentence = [wnl.lemmatize(word) for word in sentence]
+        return sentence
+    
     # Yeild an alfred json
     for json_file_idx in tqdm.tqdm(range(len(train_json_files))):
         data = json.load(open(train_json_files[json_file_idx]))
@@ -41,11 +47,12 @@ def load_next_alfred_data(ALFRED_JSON_PATTERN):
             votes = d['votes']
             if all(votes): # WARNING: Limiting dataset based on votes
                 trajectory = {'task_desc': [], 'instructions': []}
-                trajectory['task_desc'] = d['task_desc']
+                trajectory['task_desc'] = preprocess_sentence(d['task_desc'])
                 for i in range(len(d['high_descs'])):
-                    sanitized_instruction = tokenizer(d['high_descs'][i])
-                    sanitized_instruction = filter(lambda x: not x in string.punctuation,sanitized_instruction)
-                    sanitized_instruction = [wnl.lemmatize(word) for word in sanitized_instruction]
+                    sanitized_instruction = preprocess_sentence(d['high_descs'][i])
+                    #sanitized_instruction = tokenizer(d['high_descs'][i])
+                    #sanitized_instruction = filter(lambda x: not x in string.punctuation,sanitized_instruction)
+                    #sanitized_instruction = [wnl.lemmatize(word) for word in sanitized_instruction]
                     instruction = {'instruction': sanitized_instruction, 
                                    'action': actions[i]['discrete_action']['action'],
                                    'argument_1': actions[i]['discrete_action']['args'][0] if 0 < len(actions[i]['discrete_action']['args']) else '<unk>', 

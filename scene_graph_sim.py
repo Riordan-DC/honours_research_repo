@@ -19,11 +19,26 @@ Edge
 from scene_graph import SceneGraph
 import numpy as np
 
-class SceneSim:
-	def __init__(self):
-		pass
+# SceneSim functions
 
-	def step(self, scene_graph=None, )
+def ss_step(idx: int, scene_graph: SceneGraph):
+	"""
+	Performs action defined by affordance node at index (idx) in the scene graph (scene_graph)
+	"""
+	pass
+
+def ss_ai2thor_explore(controller):
+	"""
+	Explores an AI2THOR environment and returns a SceneGraph
+	"""
+	pass
+
+def ss_set_node(scene_graph, node):
+	"""
+	Sets a node in the graph. If it exists, it updates the node, if not it adds a new node.
+	"""
+	pass
+
 
 if __name__ == "__main__":
 	# import ai2thor
@@ -40,4 +55,7 @@ if __name__ == "__main__":
 	# Load each of the stored SceneGraphs
 	import glob
 	scene_graph_files = glob.glob("D:/Datasets/saved_environments_floorplan25/saved_environments_floorplan25/*.gz")
-	print(scene_graph_files)
+	
+	for sg in scene_graph_files:
+		scene_graph = SceneGraph()
+		scene_graph = scene_graph.from_pickle(sg)
