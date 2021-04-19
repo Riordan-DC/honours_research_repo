@@ -177,8 +177,8 @@ class ThorEnvironment:
         if obj['openable'] and not self.graph.has_affordance(idx, 'close'):
             self.graph.add_affordance(idx,'close')
 
-#         if obj['toggleable'] and not self.graph.has_affordance(idx, 'toggle'):
-#             self.graph.add_affordance(idx,'toggle')
+        if obj['toggleable'] and not self.graph.has_affordance(idx, 'toggle'):
+            self.graph.add_affordance(idx,'toggle')
 
         # if the object is a receptable, check if its children are already in the map and make sure there is an edge between them
         if obj['receptacleObjectIds'] is not None:
@@ -224,7 +224,7 @@ class ThorEnvironment:
 
         self.graph.clear()
 
-        event = self.controller.step(action='LookDown', degrees=20)
+        event = self.controller.step(dict(action='LookDown', degrees=20))
         # get all valid positions
         event = self.controller.step(dict(action='GetReachablePositions'))
         reachable = event.metadata['actionReturn'] # event.metadata['actionReturn'] for new version
@@ -273,7 +273,7 @@ class ThorEnvironment:
             # which object are we trying to pick?
             obj = next(self.graph.predecessors(idx))
             objectId = self.graph.nodes[obj]['data']['objectId']
-            event = self.controller.step('PickupObject', objectId=objectId)
+            event = self.controller.step(dict(action='PickupObject', objectId=objectId))
 
             # was this successful?
             if event.metadata['lastActionSuccess']:
@@ -319,22 +319,10 @@ class ThorEnvironment:
             # which object are we trying to put something on?
             target = next(self.graph.predecessors(idx))
             objectId_target = self.graph.nodes[target]['data']['objectId']
-
-            # get spawn coordinates
-            event = self.controller.step('GetSpawnCoordinatesAboveReceptacle', objectId=objectId_target, anywhere=False)
-            spawn = event.metadata['actionReturn']
-
-            if spawn == [] or spawn is None:
-                if self.verbose:
-                    print('! Error when executing PUT affordance. No spawn points on', self.graph.nodes[target]['data']['name'])
-                return False
-
             objectId_inhand = self.graph.nodes[inhand]['data']['objectId']
-            for spawn_point in spawn:
-                event = self.controller.step(action='PlaceObjectAtPoint', objectId=objectId_inhand, position=spawn_point)
-
-                if event.metadata['lastActionSuccess']:
-                    break
+            
+            # get spawn coordinates
+            event = self.controller.step(dict(action='PutObject', objectId=objectId_inhand, receptacleObjectId=objectId_target, forceAction=False, placeStationary=True))
 
             # was this successful?
             if event.metadata['lastActionSuccess']:
@@ -369,9 +357,36 @@ class ThorEnvironment:
             objectId = self.graph.nodes[obj]['data']['objectId']
             event = self.controller.step('CloseObject', objectId=objectId)
         # +++++++++
-        elif self.graph.nodes[idx]['affordance'] == 'toggle':
-            raise NotImplementedError
-
+        elif self.graph.nodes[idx]['affordance'] == 'slice':                 
+            # which object are we trying to slice?
+            obj = next(self.graph.predecessors(idx))
+            objectId = self.graph.nodes[obj]['data']['objectId']
+            event = self.controller.step(dict(action='SliceObject', objectId=objectId))  
+        # +++++++++
+        elif self.graph.nodes[idx]['affordance'] == 'heat':                 
+            # which object are we trying to heat?
+            obj = next(self.graph.predecessors(idx))
+            objectId = self.graph.nodes[obj]['data']['objectId']
+            event = self.controller.step(dict(action='HeatObject', objectId=objectId))  
+        # +++++++++
+        elif self.graph.nodes[idx]['affordance'] == 'cool':                 
+            # which object are we trying to cool?
+            obj = next(self.graph.predecessors(idx))
+            objectId = self.graph.nodes[obj]['data']['objectId']
+            event = self.controller.step(dict(action='CoolObject', objectId=objectId))  
+        # +++++++++
+        elif self.graph.nodes[idx]['affordance'] == 'clean':                 
+            # which object are we trying to clean?
+            obj = next(self.graph.predecessors(idx))
+            objectId = self.graph.nodes[obj]['data']['objectId']
+            event = self.controller.step(dict(action='CleanObject', objectId=objectId)) 
+        # +++++++++       
+        elif self.graph.nodes[idx]['affordance'] == 'toggle':                 
+            # which object are we trying to toggle?
+            obj = next(self.graph.predecessors(idx))
+            objectId = self.graph.nodes[obj]['data']['objectId']
+            event = self.controller.step('ToggleObjectOn', objectId=objectId) # WARNING: ToggleOff if already ON
+        
         # robot affordances (moving, looking up and down, crouching, standing)
         # +++++++++
         elif self.graph.nodes[idx]['affordance'] == 'crouch':

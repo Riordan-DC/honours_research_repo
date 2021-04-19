@@ -45,7 +45,7 @@ def load_next_alfred_data(ALFRED_JSON_PATTERN):
         instruction_actions = []
         for d in annotations:
             votes = d['votes']
-            if all(votes): # WARNING: Limiting dataset based on votes
+            if any(votes): # WARNING: Limiting dataset based on votes
                 trajectory = {'task_desc': [], 'instructions': []}
                 trajectory['task_desc'] = preprocess_sentence(d['task_desc'])
                 for i in range(len(d['high_descs'])):
@@ -225,5 +225,7 @@ def normalize_action_name(name):
         return 'cool'
     elif name == 'CookObject':
         return 'cook'
+    elif name == 'ToggleObject':
+        return 'toggle'
     else:
         raise NotImplementedError("Action %s not implimented yet." % name)

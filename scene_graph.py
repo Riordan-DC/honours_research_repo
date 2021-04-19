@@ -54,7 +54,13 @@ class SceneGraph(nx.DiGraph):
                                         'wateringcan' : 'water',
                                         'tvstand' : 'stand',
                                         'tissuebox' : 'tissue',
-                                        'desklamp' : 'lamp'}
+                                        'desklamp' : 'lamp',
+                                        'handtowelholder' : 'towel',
+                                        'applesliced' : 'apple',
+                                        'handle-first' : 'handle',
+                                        'potatosliced' : 'potato',
+                                        'laundryhamper' : 'laundry',
+                                        'laundryhamperlid' : 'laundry'}
         
         # Using these reduces performance. I believe because they are averaged you lose a lot of useful information.
         # Learning word vectors would help 
@@ -98,7 +104,7 @@ class SceneGraph(nx.DiGraph):
     # =================================================================================== 
     def to_pickle(self, filename):
         del self.get_word_vec
-        nx.write_gpickle(self, environment_file)
+        nx.write_gpickle(self, filename)
         self.init_word_vec()
     
     # =================================================================================== 
