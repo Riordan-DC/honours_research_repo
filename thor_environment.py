@@ -170,12 +170,6 @@ class ThorEnvironment:
         
         if obj['receptacle'] and not self.graph.has_affordance(idx, 'put'):
             self.graph.add_affordance(idx,'put')
-            
-        if obj['openable'] and not self.graph.has_affordance(idx, 'open'):
-            self.graph.add_affordance(idx,'open')
-        
-        if obj['openable'] and not self.graph.has_affordance(idx, 'close'):
-            self.graph.add_affordance(idx,'close')
         
         # New: https://allenai.github.io/ai2thor-v2.1.0-documentation/actions/interaction
         if obj['sliceable'] and not self.graph.has_affordance(idx, 'slice'):
