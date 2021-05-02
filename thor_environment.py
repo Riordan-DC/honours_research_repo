@@ -1,6 +1,7 @@
 from scene_graph import SceneGraph
 import numpy as np, termcolor
-
+from tqdm import tqdm
+import math
 
 class Task:
     def __init__(self):
@@ -96,7 +97,7 @@ class PickTask(Task):
 
 
 class ThorEnvironment:
-    def __init__(self, scene='FloorPlan29', grid_size=0.25, controller=None, word_vec=None, verbose=False):
+    def __init__(self, scene='FloorPlan29', grid_size=0.25, controller=None, word_vec=None, verbose=True):
 
         # initialise the AI2Thor controller
         if controller is None:
@@ -146,46 +147,68 @@ class ThorEnvironment:
 
     # ===============================================================================================
     def update_object(self, obj, pose=None):
-
         # does the object exist in the graph?
-        idx = self.graph.find('name', obj['name'])
-
+        idx = self.graph.find('name', obj['name']) 
+        
         # if not, add it and its affordances
-        if idx == []:
-            idx = self.graph.add_object(obj['objectType'].lower(), data=obj)
+        if idx == []:                        
+            idx = self.graph.add_object(obj['objectType'].lower(), data=obj)                
         else:
             # if the object exists, update it with the observation given in obj
             assert(len(idx)==1)
             idx = idx[0]
             self.graph.nodes[idx]['data'] = obj
-
+            
         # if pose is given, check that the object has a goto affordance with that pose connected to it
-        if pose is not None:
+        if pose is not None:                        
             if len([g for g in self.graph.get_affordances(idx, 'go') if self.graph.nodes[g]['data']['pose']==pose])==0:
-                self.graph.add_affordance(idx, 'go', data={'pose':pose})
-
+                self.graph.add_affordance(idx, 'go', data={'pose':pose})                    
+        
         # add other affordances as neccessary
         if obj['pickupable'] and not self.graph.has_affordance(idx, 'pick'):
             self.graph.add_affordance(idx,'pick')
-
+        
         if obj['receptacle'] and not self.graph.has_affordance(idx, 'put'):
             self.graph.add_affordance(idx,'put')
-
+            
         if obj['openable'] and not self.graph.has_affordance(idx, 'open'):
             self.graph.add_affordance(idx,'open')
-
+        
         if obj['openable'] and not self.graph.has_affordance(idx, 'close'):
             self.graph.add_affordance(idx,'close')
-
+        
+        # New: https://allenai.github.io/ai2thor-v2.1.0-documentation/actions/interaction
+        if obj['sliceable'] and not self.graph.has_affordance(idx, 'slice'):
+            # Note: The SliceObject action in AI2THOR can be performed without a knife It seems?
+            self.graph.add_affordance(idx,'slice')
+            
+        if obj['dirtyable'] and not self.graph.has_affordance(idx, 'clean'):
+            # Note: The CleanObject action in AI2THOR can be performed without any cleaning product?
+            self.graph.add_affordance(idx,'clean')
+        
+        # ALFRED Actions: Heat and Cool
+        # HeatObject / CoolObject are NOT AI2THOR actions but instead are PutObject actions on specific objects
+        # such as oven, microwave, or fridge.
+        # The heat and cool affordances will be added to the objects being heated or cooled because this makes more
+        # sense as ALFRED actions are structed as Heat -> Apple or Cool -> Bread, NOT Heat -> Microwave.
+        if obj['pickupable']:
+            if not self.graph.has_affordance(idx, 'heat'):
+                self.graph.add_affordance(idx, 'heat')
+            if not self.graph.has_affordance(idx, 'cool'):
+                self.graph.add_affordance(idx, 'cool')
+  
+        # ALFRED Action: Toggle
+        # ToggleObject is NOT an AI2THOR action but instead are ToggleOn and ToggleOff actions performed if either the object
+        # metadata state 'isToggled' is true or false. 
         if obj['toggleable'] and not self.graph.has_affordance(idx, 'toggle'):
-            self.graph.add_affordance(idx,'toggle')
-
+            self.graph.add_affordance(idx,'toggle')        
+        
         # if the object is a receptable, check if its children are already in the map and make sure there is an edge between them
         if obj['receptacleObjectIds'] is not None:
-            for child in obj['receptacleObjectIds']:
+            for child in obj['receptacleObjectIds']:            
                 try:
                     # for the children that are in the map already
-                    child_idx = self.graph.find('objectId', child)[0]
+                    child_idx = self.graph.find('objectId', child)[0]                                
 
                     # is there an edge from parent to child?
                     if not child_idx in self.graph.successors(idx):
@@ -195,18 +218,18 @@ class ThorEnvironment:
                     if not idx in self.graph.successors(child_idx):
                         self.graph.add_relation_edge(child_idx, idx, 'in')
 
-                except IndexError:
+                except IndexError:   
                     # the child object is not yet in the map, we can't do anything about it now
                     pass
-
-
+                                                        
+        
         # if the object is inside a receptable, check if the receptable is already in the map and make sure there is an edge between them
         if obj['parentReceptacles'] is not None:
             for parent in obj['parentReceptacles']:
                 try:
                     # for the parents that are in the map already
-                    parent_idx = self.graph.find('objectId', parent)[0]
-
+                    parent_idx = self.graph.find('objectId', parent)[0]              
+                    
                     # is there an edge from parent to child?
                     if not idx in self.graph.successors(parent_idx):
                         self.graph.add_relation_edge(parent_idx, idx, 'contains')
@@ -214,7 +237,7 @@ class ThorEnvironment:
                     # is there an edge from child to parent?
                     if not parent_idx in self.graph.successors(idx):
                         self.graph.add_relation_edge(idx, parent_idx, 'in')
-                except IndexError:
+                except IndexError:   
                     pass
                     # the parent object is not yet in the map, we can't do anything about it now
 
@@ -227,23 +250,42 @@ class ThorEnvironment:
         event = self.controller.step(dict(action='LookDown', degrees=20))
         # get all valid positions
         event = self.controller.step(dict(action='GetReachablePositions'))
-        reachable = event.metadata['actionReturn'] # event.metadata['actionReturn'] for new version
-
+        reachable = event.metadata['actionReturn']
+        
+        def dist(a, b):
+            return math.sqrt((b[0] - a[0])**2 + (b[1] - a[1])**2 + (b[2] - a[2])**2)
+        
+        # teleport the robot to the nearest valid position to every visible object
+        for obj in tqdm(event.metadata['objects']):
+            pose = reachable[0]
+            # get nearest pose
+            for loc in reachable:
+                dist1 = dist(list(obj['position'].values()),list(pose.values()))
+                dist2 = dist(list(obj['position'].values()),list(loc.values()))
+                if dist2 < dist1:
+                    pose = loc
+            pose = [pose['x'], pose['y'], pose['z'], 0] # 0 = rot
+            self.update_object(obj, pose)
+            self.last_pose = pose
+        
+        """
         # teleport the robot to all positions, then rotate in place by a fixed angle and remember which objects are visible
-        for loc in reachable:
+        for loc in tqdm(reachable):
             action = dict(action='Teleport')
             action.update(loc)
             self.controller.step(action)
 
-            for rot in range(0,360,45):   # rotate in 45 deg increments
+            for rot in range(0,360,90):   # rotate in 90 deg increments
                 event = self.controller.step(dict(action='Rotate', rotation=rot))
                 pose = [loc['x'], loc['y'], loc['z'], rot]
                 self.last_pose = pose
-
-                for obj in [o for o in event.metadata['objects'] if o['visible']]:
+                visible_objects = [o for o in event.metadata['objects'] if o['visible']]
+                for obj in visible_objects:
                     self.update_object(obj, pose)
-
+        """
+        
         self.graph.to_torch_graph()
+    
     # ===============================================================================================
     def step(self, idx):
         assert self.graph.nodes[idx]['node_type'] == 'affordance', 'Not an affordance: %d' % idx
@@ -267,7 +309,7 @@ class ThorEnvironment:
 
                 self.graph.add_relation_edge(self.graph.robot_node, obj, 'at')
                 self.graph.add_relation_edge(self.graph.robot_node, idx, 'at')
-
+                
         # +++++++++
         elif self.graph.nodes[idx]['affordance'] == 'pick':
             # which object are we trying to pick?
@@ -343,7 +385,79 @@ class ThorEnvironment:
             else:
                 if self.verbose:
                     print(event.metadata['lastAction'], event.metadata['lastActionSuccess'], event.metadata['errorMessage'])
+        # +++++++++
+        elif self.graph.nodes[idx]['affordance'] == 'heat' or self.graph.nodes[idx]['affordance'] == 'cool':
+            # TODO: Heat and Cool affordances are just Put affordances on microwaves and fridges respectivly.
+            # The heat and cool affordances will be added to the objects being heated or cooled because this makes more
+            # sense as ALFRED actions are structed as Heat -> Apple or Cool -> Bread, NOT Heat -> Microwave.
+            # Therefore we must change how the target is selected. 
+            
+            # are we heating or cooling?
+            temp_change = self.graph.nodes[idx]['affordance']
+            
+            # which object are we attempting to put down?
+            inhand = self.graph.get_relations(self.graph.robot_node, 'contains')
 
+            if len(inhand)<1:
+                if self.verbose:
+                    print('! Error when executing PUT affordance: Agent does not carry an object.', inhand)
+                return False
+            elif len(inhand)>1:
+                if self.verbose:
+                    print('! Error when executing PUT affordance: Agent carries multiple objects.')
+                    print(inhand, [self.graph.nodes[x]['data']['name'] for x in inhand])
+                return False
+            else:
+                inhand=inhand[0]
+
+            # make sure we have an object in our hand!
+            if self.graph.nodes[inhand]['node_type'] != 'object':
+                if self.verbose:
+                    print('! Error when executing PUT affordance: Not an object.', obj, self.graph)
+                return False
+
+            # which object are we trying to heat/cool something with?
+            target = None
+            for node in self.graph.get_relations(self.graph.robot_node, 'at'):
+                if self.graph.nodes[node]['node_type'] == 'object':
+                    if temp_change == 'heat':
+                        if self.graph.nodes[node]['data']['canChangeTempToHot']:
+                            target = node
+                            break
+                    elif temp_change == 'cool':
+                        if self.graph.nodes[node]['data']['canChangeTempToCold']:
+                            target = node
+                            break
+            
+            if target == None:
+                if self.verbose:
+                    print(f"! Error when finding object for '{temp_change}'. None found!")
+                return False
+            objectId_target = self.graph.nodes[target]['data']['objectId']
+            objectId_inhand = self.graph.nodes[inhand]['data']['objectId']
+            
+            # get spawn coordinates
+            event = self.controller.step(dict(action='PutObject', objectId=objectId_inhand, receptacleObjectId=objectId_target, forceAction=False, placeStationary=True))
+
+            # was this successful?
+            if event.metadata['lastActionSuccess']:
+
+                self.controller.step('DropHandObject')
+                event = self.controller.step(action='PlaceObjectAtPoint', objectId=objectId_inhand, position=spawn_point)
+
+                # remove connection between robot and dropped inhand object
+                self.graph.remove_edge(inhand, self.graph.robot_node)
+                self.graph.remove_edge(self.graph.robot_node, inhand)
+
+                # we need to update both the target and the dropped object
+                obj = [o for o in event.metadata['objects'] if o['name']==self.graph.nodes[inhand]['data']['name']][0]
+                self.update_object(obj, pose = self.last_pose)
+
+                obj = [o for o in event.metadata['objects'] if o['name']==self.graph.nodes[target]['data']['name']][0]
+                self.update_object(obj)
+            else:
+                if self.verbose:
+                    print(event.metadata['lastAction'], event.metadata['lastActionSuccess'], event.metadata['errorMessage'])        
         # +++++++++
         elif self.graph.nodes[idx]['affordance'] == 'open':
             # which object are we trying to open?
@@ -363,29 +477,22 @@ class ThorEnvironment:
             objectId = self.graph.nodes[obj]['data']['objectId']
             event = self.controller.step(dict(action='SliceObject', objectId=objectId))  
         # +++++++++
-        elif self.graph.nodes[idx]['affordance'] == 'heat':                 
-            # which object are we trying to heat?
-            obj = next(self.graph.predecessors(idx))
-            objectId = self.graph.nodes[obj]['data']['objectId']
-            event = self.controller.step(dict(action='HeatObject', objectId=objectId))  
-        # +++++++++
-        elif self.graph.nodes[idx]['affordance'] == 'cool':                 
-            # which object are we trying to cool?
-            obj = next(self.graph.predecessors(idx))
-            objectId = self.graph.nodes[obj]['data']['objectId']
-            event = self.controller.step(dict(action='CoolObject', objectId=objectId))  
-        # +++++++++
         elif self.graph.nodes[idx]['affordance'] == 'clean':                 
             # which object are we trying to clean?
             obj = next(self.graph.predecessors(idx))
             objectId = self.graph.nodes[obj]['data']['objectId']
             event = self.controller.step(dict(action='CleanObject', objectId=objectId)) 
-        # +++++++++       
-        elif self.graph.nodes[idx]['affordance'] == 'toggle':                 
+        # +++++++++
+        elif self.graph.nodes[idx]['affordance'] == 'toggle':         
             # which object are we trying to toggle?
             obj = next(self.graph.predecessors(idx))
             objectId = self.graph.nodes[obj]['data']['objectId']
-            event = self.controller.step('ToggleObjectOn', objectId=objectId) # WARNING: ToggleOff if already ON
+            isToggled = self.graph.nodes[obj]['data']['isToggled']
+            # Check if object state isToggled
+            if isToggled:
+                event = self.controller.step(dict(action='ToggleObjectOff', objectId=objectId))
+            else:
+                event = self.controller.step(dict(action='ToggleObjectOn', objectId=objectId))
         
         # robot affordances (moving, looking up and down, crouching, standing)
         # +++++++++

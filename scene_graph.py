@@ -209,19 +209,18 @@ class SceneGraph(nx.DiGraph):
         data['x'] = torch.tensor([self.nodes[n]['x'] for n in self.nodes])        
 #         data['edge_attr'] = torch.tensor([self.edges[n]['x'] for n in self.edges])
         
-        
         graph = torch_geometric.data.Data.from_dict(data)
         graph.num_nodes = self.number_of_nodes()
         
-        # a mask for all the affordance nodes
-        mask = []
+        # masks for the affordance nodes
+        affordance_mask = []
         for n in sorted(self.nodes):
             if self.nodes[n]['node_type']=='affordance':
-                mask.append(True) 
+                affordance_mask.append(True) 
             else:
-                mask.append(False)
+                affordance_mask.append(False)
         
-        self._torch_affordance_mask = torch.tensor(mask, dtype=torch.bool)
+        self._torch_affordance_mask = torch.tensor(affordance_mask, dtype=torch.bool)
         
         # a mask for all the object nodes
         mask = []
@@ -286,3 +285,5 @@ class SceneGraph(nx.DiGraph):
                     if self.adj[idx][n].get('relation') == relation:
                         relations.append(n)
             return relations
+    
+    

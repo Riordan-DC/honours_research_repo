@@ -27,9 +27,7 @@ class CosineModel(torch.nn.Module):
             max_node = torch.argmax(node_scores)
             max_nodes.append(max_node)
         
-        x = scores.view(-1,1)
-
-        return x, max_nodes 
+        return scores, max_nodes 
     
     def one_hot(self, data, target):
         '''
