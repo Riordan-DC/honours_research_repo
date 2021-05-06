@@ -1,0 +1,91 @@
+scene 	 instruction 	 expected_object 	 expected_affordance 	 actual_object 	 actual_affordance 	 success
+FloorPlan25	turn right and walk to the microwave on the right	go	microwave	go	microwave	True
+FloorPlan25	open the door on the microwave and take the dark colored vegetable close the door	pick	potato	open	fridge	False
+FloorPlan25	turn left and walk to the sink	go	sinkbasin	go	sinkbasin	True
+FloorPlan25	put the vegetable in the sink	put	potato	put	sinkbasin	False
+FloorPlan25	turn right then turn back left to face the sink	go	countertop	put	sinkbasin	False
+FloorPlan25	take the knife on the sink	pick	knife	put	sinkbasin	False
+FloorPlan25	turn around then turn back to face the sink	go	potato	put	sinkbasin	False
+FloorPlan25	slice the vegetable in the sink	slice	potato	slice	bread	False
+FloorPlan25	turn right and go to the microwave	go	microwave	go	microwave	True
+FloorPlan25	take the potato out of the microwave	pick	potato	put	microwave	False
+FloorPlan25	go to the sink on the left	go	sinkbasin	go	sinkbasin	True
+FloorPlan25	put the potato in the sink	put	potato	put	sinkbasin	False
+FloorPlan25	move to the right slightly	go	countertop	go	window	False
+FloorPlan25	pick up the knife	pick	knife	pick	knife	True
+FloorPlan25	move slightly to the left	go	potato	go	saltshaker	False
+FloorPlan25	slice the potato	slice	potato	go	fridge	False
+FloorPlan25	turn right and begin walking to the sink stop once past the fridge and turn right to face the microwave	go	microwave	go	faucet	False
+FloorPlan25	open the microwave door and remove the sweet potato that is in the microwave then close the door	pick	potato	open	microwave	False
+FloorPlan25	turn around and begin walking across the room then hang a right and walk up to the sink	go	sinkbasin	go	sinkbasin	True
+FloorPlan25	place the sweet potato in the leftmost sink basin	put	potato	put	sinkbasin	False
+FloorPlan25	turn right and take a step forward then turn left and walk up to the sink	go	countertop	go	sink	False
+FloorPlan25	pick up the large metal knife that is on the front edge of the counter in front of the sink	pick	knife	put	countertop	False
+FloorPlan25	turn around and take a step forward then turn right and take a step forward then turn right again to face the sink	go	potato	put	sinkbasin	False
+FloorPlan25	slice up the sweet potato that is in the leftmost sink basin	slice	potato	slice	bread	False
+FloorPlan25	turn left and walk to the sink	go	countertop	go	sinkbasin	False
+FloorPlan25	pick up the knife from the ground that is on the left	pick	knife	pick	knife	True
+FloorPlan25	move slightly forward to the sink basin	go	potato	put	sinkbasin	False
+FloorPlan25	use the knife to slice the potato in the sink basin	slice	potato	slice	potato	True
+FloorPlan25	turn left and walk into the kitchen to the sink	go	countertop	go	sinkbasin	False
+FloorPlan25	look down and pick up the left most knife from the floor	pick	knife	pick	knife	True
+FloorPlan25	look up to face the kitchen sink	go	potato	put	sinkbasin	False
+FloorPlan25	cut the round fruit in the sink with the knife	slice	potato	pick	knife	False
+FloorPlan25	turn right and take a small step to your right then walk forward to the counter	go	countertop	go	countertop	True
+FloorPlan25	pick up the fork that s in front of you to the right of the stove	pick	fork	pick	fork	True
+FloorPlan25	turn around and take a step then turn left to face the sink	go	sinkbasin	put	sinkbasin	False
+FloorPlan25	wash the fork in the left sink and then pick it back up and shut off the water	clean	fork	put	sinkbasin	False
+FloorPlan25	turn left to face the counter again	go	drawer	break	window	False
+FloorPlan25	open the drawer under the counter to the right of the stove and put the clean fork in there then close the drawer	put	fork	close	drawer	False
+FloorPlan25	turn around and go to the counter with the toaster on it	go	countertop	go	countertop	True
+FloorPlan25	pick up the fork sitting on the counter and turn around	pick	fork	pick	fork	True
+FloorPlan25	cross the kitchen to the sink	go	sinkbasin	put	sinkbasin	False
+FloorPlan25	place the fork in the sink and wash it then pick it back up	clean	fork	pick	fork	False
+FloorPlan25	turn around and go to the drawer beside the oven	go	drawer	go	drawer	True
+FloorPlan25	open the drawer and put the fork inside and close it	put	fork	close	drawer	False
+FloorPlan25	walk to the counter to the right of the stove	go	countertop	go	countertop	True
+FloorPlan25	pick up the fork to the left of the toaster	pick	fork	pick	fork	True
+FloorPlan25	walk to the sink on the right	go	sinkbasin	go	sinkbasin	True
+FloorPlan25	put the fork down in the left side of the sink rinse of the fork pick up the fork	clean	fork	pick	fork	False
+FloorPlan25	turn left to face the counter to the right of the stove	go	drawer	put	countertop	False
+FloorPlan25	open the drawer below the counter put the fork in the drawer close the drawer	put	fork	close	drawer	False
+FloorPlan25	turn right walk to sink	go	countertop	go	sinkbasin	False
+FloorPlan25	pick up the fork that is in front of the sink	pick	fork	pick	fork	True
+FloorPlan25	move two step to the left	go	sinkbasin	break	window	False
+FloorPlan25	put the fork in the sink fill with water take fork out	clean	fork	put	sinkbasin	False
+FloorPlan25	turn to the left to face counter	go	drawer	go	countertop	False
+FloorPlan25	put the fork in the drawer	put	fork	put	drawer	False
+FloorPlan25	walk to face sink	go	countertop	go	sinkbasin	False
+FloorPlan25	pick up fork from sink edge	pick	fork	pick	fork	True
+FloorPlan25	turn to face left sink	go	sinkbasin	put	sinkbasin	False
+FloorPlan25	wash and remove fork from sink	clean	fork	put	sinkbasin	False
+FloorPlan25	turn left to face counter top and drawer	go	drawer	put	drawer	False
+FloorPlan25	put fork in drawer	put	fork	put	drawer	False
+FloorPlan25	turn around and walk to the counter with the microwave on the right	go	countertop	put	countertop	False
+FloorPlan25	pick up the fork behind the green sponge on the counter	pick	fork	pick	fork	True
+FloorPlan25	turn around and walk to the sink on the right	go	sinkbasin	go	sinkbasin	True
+FloorPlan25	put the fork inside the left side of the sink rinse it for a few second and pick it back up	clean	fork	put	sinkbasin	False
+FloorPlan25	turn left to face the drawer to the right of the stove	go	drawer	close	drawer	False
+FloorPlan25	open the left drawer next to the stove put the rinsed fork inside and close the drawer	put	fork	close	drawer	False
+FloorPlan25	turn right to walk to the microwave	go	countertop	go	microwave	False
+FloorPlan25	pick up the fork next to the microwave on the counter	pick	fork	pick	fork	True
+FloorPlan25	turn left to walk to the sink	go	sinkbasin	go	sinkbasin	True
+FloorPlan25	rinse the fork in the sink	clean	fork	put	sinkbasin	False
+FloorPlan25	turn left to face the drawer directly below the avocado on the counter	go	drawer	put	countertop	False
+FloorPlan25	put the fork away in the drawer below the avocado	put	fork	put	drawer	False
+FloorPlan25	turn around walk forward to the sink then turn right and walk to the microwave	go	countertop	go	sinkbasin	False
+FloorPlan25	pick up the fork on the counter to the left of the microwave	pick	fork	pick	fork	True
+FloorPlan25	turn around walk forward slightly then turn right and walk to the sink	go	sinkbasin	go	sinkbasin	True
+FloorPlan25	put the fork in the sink rinse it off and take it back out	clean	fork	put	sinkbasin	False
+FloorPlan25	turn left towards the stove top	go	drawer	put	stoveburner	False
+FloorPlan25	put the fork in the top drawer just to the right of the stove top then close the drawer	put	fork	close	drawer	False
+FloorPlan25	turn left to the table	go	countertop	break	window	False
+FloorPlan25	pick up a knife from the table	pick	knife	pick	knife	True
+FloorPlan25	turn right to the fridge	go	tomato	go	fridge	False
+FloorPlan25	slice the tomato in the fridge	slice	tomato	slice	tomato	True
+FloorPlan25	move to the fridge	go	fridge	put	fridge	False
+FloorPlan25	drop the knife in the fridge	put	knife	close	fridge	False
+FloorPlan25	move to the tomato slice	go	fridge	slice	tomato	False
+FloorPlan25	pick up a tomato slice	pick	tomato	pick	tomato	True
+FloorPlan25	head left to the oven	go	microwave	put	stoveburner	False
+FloorPlan25	cook the tomato slice in the oven	heat	tomato	cook	potato	False
