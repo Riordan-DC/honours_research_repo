@@ -225,3 +225,54 @@ def normalize_action_name(name):
         return 'toggle'
     else:
         raise NotImplementedError("Action %s not implimented yet." % name)
+
+
+import json
+import os
+
+class Language:
+    def __init__(self):
+        self.word2index = {}
+        self.word2count = {}
+        self.index2word = {}
+        self.n_words = 0
+    
+    def add_sentence(self, sentence):
+        for word in sentence:
+            self.add_word(word)
+    
+    def add_word(self, word):
+        if word not in self.word2index: # Add word to langauge if unseen 
+            self.word2index[word] = self.n_words
+            self.word2count[word] = 1
+            self.index2word[self.n_words] = word
+            self.n_words += 1
+        else:
+            self.word2count[word] += 1
+    
+    def word(self, index):
+        return self.index2word.get(str(index), f"<unk:{index}>")
+    
+    def index(self, word):
+        return self.word2index.get(word, f"<unk:{word}>")
+    
+    def dump(self, filename):
+        obj = {
+            'word2index' : self.word2index,
+            'word2count' : self.word2count,
+            'index2word' : self.index2word,
+            'n_words' : self.n_words
+        }
+        with open(filename, 'w') as fp:
+            json.dump(obj, fp)
+    
+    def load(self, filename):
+        with open(filename, 'r') as fp:
+            obj = json.load(fp)
+            self.word2index = obj['word2index']
+            self.word2count = obj['word2count']
+            self.index2word = obj['index2word']
+            self.n_words = obj['n_words']
+    
+    def reset_counts(self):
+        self.word2count = dict.fromkeys(self.word2count, 0)

@@ -363,8 +363,8 @@ class ThorEnvironment:
             # was this successful?
             if event.metadata['lastActionSuccess']:
 
-                self.controller.step('DropHandObject')
-                event = self.controller.step(action='PlaceObjectAtPoint', objectId=objectId_inhand, position=spawn_point)
+                #self.controller.step(dict(action='DropHandObject'))
+                #event = self.controller.step(dict(action='PlaceObjectAtPoint', objectId=objectId_inhand, position=spawn_point))
 
                 # remove connection between robot and dropped inhand object
                 self.graph.remove_edge(inhand, self.graph.robot_node)
@@ -436,8 +436,8 @@ class ThorEnvironment:
             # was this successful?
             if event.metadata['lastActionSuccess']:
 
-                self.controller.step('DropHandObject')
-                event = self.controller.step(action='PlaceObjectAtPoint', objectId=objectId_inhand, position=spawn_point)
+                #self.controller.step(dict(action='DropHandObject'))
+                #event = self.controller.step(dict(action='PlaceObjectAtPoint', objectId=objectId_inhand, position=spawn_point))
 
                 # remove connection between robot and dropped inhand object
                 self.graph.remove_edge(inhand, self.graph.robot_node)
