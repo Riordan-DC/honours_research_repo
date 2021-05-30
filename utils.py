@@ -29,10 +29,13 @@ def load_next_alfred_data(ALFRED_JSON_PATTERN):
     wnl = WordNetLemmatizer()
     dataset = []
     
+    stop_words = ["the", "and", "of", "a", "is", "over"]
+    
     def preprocess_sentence(sentence):
         sentence = tokenizer(sentence)
         sentence = filter(lambda x: not x in string.punctuation, sentence)
         sentence = [wnl.lemmatize(word) for word in sentence]
+        sentence = list(filter(lambda x: not x in stop_words, sentence))
         return sentence
     
     # Yeild an alfred json

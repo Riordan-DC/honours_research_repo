@@ -76,7 +76,7 @@ def tensors_from_pair(input_lang, output_lang, pair):
     target_tensor = tensor_from_sentence(output_lang, pair[1])
     return (input_tensor, target_tensor)
 
-MAX_LENGTH = 10
+MAX_LENGTH = 15
 
 # Sourced from Pytorch Tutorial: Seq2Seq Translation Tutorial
 # https://pytorch.org/tutorials/intermediate/seq2seq_translation_tutorial.html
